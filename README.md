@@ -1,343 +1,297 @@
-# Restaurant Booking Mock API Server
+# Restaurant Booking Conversational Agent
 
-A complete mock restaurant booking management system built with FastAPI and SQLite. This server provides realistic restaurant booking endpoints for developers to integrate with their applications.
+An intelligent, production-ready conversational agent for restaurant bookings, built with Llama3, LangGraph, and FastAPI. This system demonstrates advanced AI orchestration, state management, and real-world API integration.
 
-**Purpose**: This mock server simulates a real restaurant booking system, allowing developers to build and test application integrations without needing access to production restaurant APIs.
+## Overview
 
-## Project Structure
+This project implements a sophisticated restaurant booking assistant that handles natural language conversations to:
+- Check restaurant availability
+- Create new bookings
+- Retrieve booking details
+- Modify existing reservations
+- Cancel bookings
+
+The agent features a modern web interface with real-time WebSocket communication and maintains conversation context across multiple turns.
+
+## Architecture
+
+### Technology Stack
+- **LLM**: Llama3 8B (via Ollama) - Locally hosted for privacy and control
+- **Agent Framework**: LangGraph - For complex conversation flow management
+- **Web Framework**: FastAPI - High-performance async Python framework
+- **Chat Interface**: HTML5/WebSocket - Real-time bidirectional communication
+- **API Client**: httpx - Async HTTP client with robust error handling
+- **State Management**: In-memory session store with LangGraph state schema
+
+### System Architecture
 
 ```
-GFDE test/
-├── app/
-│   ├── __init__.py
-│   ├── __main__.py          # Module entry point (python -m app)
-│   ├── main.py              # Main FastAPI application
-│   ├── database.py          # Database configuration
-│   ├── models.py            # SQLAlchemy database models
-│   ├── init_db.py           # Database initialization script
-│   └── routers/
-│       ├── __init__.py
-│       ├── availability.py  # Availability search endpoints
-│       └── booking.py       # Booking management endpoints
-├── requirements.txt
-├── restaurant_booking.db    # SQLite database (created automatically)
-└── README.md
+┌─────────────────────┐     ┌─────────────────────┐
+│   Web Interface     │────▶│   FastAPI Server    │
+│  (HTML/WebSocket)   │◀────│    (Port 8000)      │
+└─────────────────────┘     └──────────┬──────────┘
+                                       │
+                            ┌──────────▼──────────┐
+                            │   LangGraph Agent   │
+                            │  (State Machine)    │
+                            └──────────┬──────────┘
+                                       │
+                ┌──────────────────────┼──────────────────────┐
+                │                      │                      │
+     ┌──────────▼──────────┐ ┌────────▼────────┐  ┌─────────▼─────────┐
+     │   Llama3 Model      │ │  Booking Tools  │  │   API Client      │
+     │   (via Ollama)      │ │  (Date Parser)  │  │  (Bearer Auth)    │
+     └─────────────────────┘ └─────────────────┘  └─────────┬─────────┘
+                                                             │
+                                                  ┌──────────▼──────────┐
+                                                  │  Restaurant API     │
+                                                  │   (Port 8547)       │
+                                                  └─────────────────────┘
 ```
 
-## Installation
+## Getting Started
 
-1. Install dependencies:
+### Prerequisites
+- Python 3.10+ (tested with 3.13)
+- Ollama installed and running
+- 8GB+ RAM for Llama3 model
+- Unix-based OS (macOS/Linux) or WSL on Windows
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/yourusername/restaurant-booking-agent.git
+cd restaurant-booking-agent
+```
+
+2. **Create virtual environment**
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-2. (Optional) Initialise database manually:
+4. **Download Llama3 model**
 ```bash
-python app/init_db.py
+ollama pull llama3
 ```
-*Note: The database will be automatically initialized when you start the server for the first time.*
 
-## Running the Server
-
-### Development Mode (Recommended)
+5. **Start the mock API server**
 ```bash
 python -m app
+# Server runs on http://localhost:8547
 ```
 
-### Alternative Development Mode
+6. **Start the agent server** (in a new terminal)
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8547
+source venv/bin/activate
+python main_agent.py
+# Agent runs on http://localhost:8000
 ```
 
-## Database Features
-
-- **SQLite Database**: Lightweight, file-based database (`restaurant_booking.db`)
-- **Automatic Setup**: Database tables and sample data created on first run
-- **Models**:
-  - `Restaurant`: Restaurant information and microsite names
-  - `Customer`: Customer details with marketing preferences
-  - `Booking`: Booking records with full relationship mapping
-  - `AvailabilitySlot`: Time slots for restaurant availability
-  - `CancellationReason`: Predefined cancellation reasons
-- **Sample Data**: 30 days of availability slots and cancellation reasons
-
-## Authentication
-
-All endpoints require a Bearer token in the Authorization header.
-
-**Required Header:**
+7. **Access the web interface**
 ```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8
+Open browser to http://localhost:8000
 ```
 
-**Authentication Errors:**
-- **401 Unauthorised**: Missing, invalid, or expired token
-- **401 Unauthorised**: Invalid authorisation header format
+## Features
 
-## API Endpoints
+### Core Capabilities
 
-All endpoints use `application/x-www-form-urlencoded` content type for POST/PATCH requests and require the Authorization header.
+#### 1. Natural Language Understanding
+- Intent recognition (booking, checking, modifying, cancelling)
+- Entity extraction (dates, times, party sizes, references)
+- Context retention across conversations
+- Handling of relative dates ("tomorrow", "next Friday", "this weekend")
 
-### 1. Search Available Time Slots
-**POST** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/AvailabilitySearch`
+#### 2. Booking Operations
+- **Check Availability**: Query available slots for specific dates
+- **Create Booking**: Make reservations with customer details
+- **View Booking**: Retrieve booking information by reference
+- **Modify Booking**: Update date, time, or party size
+- **Cancel Booking**: Remove reservations with reason tracking
 
-Returns available booking slots for a specific date and party size.
+#### 3. User Experience
+- Real-time WebSocket communication
+- Typing indicators for better UX
+- Quick action buttons for common tasks
+- Session persistence across page refreshes
+- Error recovery and graceful fallbacks
 
-**Parameters:**
-- `VisitDate`: Date in YYYY-MM-DD format (required)
-- `PartySize`: Number of people (required)
-- `ChannelCode`: Booking channel, typically "ONLINE" (required)
+### Advanced Features
 
-**Response:**
-```json
-{
-  "restaurant": "TheHungryUnicorn",
-  "restaurant_id": 1,
-  "visit_date": "2025-08-06",
-  "party_size": 2,
-  "channel_code": "ONLINE",
-  "available_slots": [
-    {
-      "time": "12:00:00",
-      "available": true,
-      "max_party_size": 8,
-      "current_bookings": 0
-    }
-  ],
-  "total_slots": 8
-}
-```
+#### State Management
+- Conversation history tracking
+- Pending booking collection
+- Current booking reference retention
+- Error state handling
+- Session-based isolation
 
-### 2. Create New Booking
-**POST** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/BookingWithStripeToken`
+#### Date/Time Intelligence
+- Natural language date parsing ("next Friday", "tomorrow")
+- Business hours validation
+- Future date enforcement
+- Time format normalization
 
-Creates a new restaurant booking with customer information.
+#### API Integration
+- Bearer token authentication
+- Request/response validation
+- Error handling and retry logic
+- Response caching for efficiency
 
-**Required Parameters:**
-- `VisitDate`: Date in YYYY-MM-DD format
-- `VisitTime`: Time in HH:MM:SS format
-- `PartySize`: Number of people
-- `ChannelCode`: Booking channel (e.g., "ONLINE")
+## Design Rationale
 
-**Optional Parameters:**
-- `SpecialRequests`: Special requirements text
-- `IsLeaveTimeConfirmed`: Boolean for time confirmation
-- `RoomNumber`: Specific room/table number
+### Why Llama3 + Ollama?
+- **Privacy**: All processing happens locally, no data sent to external APIs
+- **Cost**: No per-token charges, unlimited usage
+- **Control**: Full control over model behavior and updates
+- **Performance**: Sub-second response times with proper hardware
 
-**Customer Information (all optional):**
-- `Customer[Title]`: Mr/Mrs/Ms/Dr
-- `Customer[FirstName]`: Customer's first name
-- `Customer[Surname]`: Customer's last name
-- `Customer[Email]`: Email address
-- `Customer[Mobile]`: Mobile phone number
-- `Customer[Phone]`: Landline phone number
-- `Customer[MobileCountryCode]`: Mobile country code
-- `Customer[PhoneCountryCode]`: Phone country code
-- `Customer[ReceiveEmailMarketing]`: Boolean for email marketing consent
-- `Customer[ReceiveSmsMarketing]`: Boolean for SMS marketing consent
+### Why LangGraph?
+- **State Management**: Built-in conversation state handling
+- **Flow Control**: Declarative conversation flow definition
+- **Tool Integration**: Seamless integration with external tools
+- **Scalability**: Graph-based architecture scales with complexity
 
-**Response:**
-```json
-{
-  "booking_reference": "ABC1234",
-  "booking_id": 1,
-  "restaurant": "TheHungryUnicorn",
-  "visit_date": "2025-08-06",
-  "visit_time": "12:30:00",
-  "party_size": 4,
-  "status": "confirmed",
-  "customer": {
-    "id": 1,
-    "first_name": "John",
-    "surname": "Smith",
-    "email": "john@example.com"
-  },
-  "created_at": "2025-08-06T10:30:00.123456"
-}
-```
+### Why FastAPI?
+- **Performance**: Built on Starlette and Pydantic for speed
+- **WebSockets**: Native WebSocket support for real-time chat
+- **Documentation**: Automatic API documentation generation
+- **Type Safety**: Full type hints and validation
 
-### 3. Get Booking Details
-**GET** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/{booking_reference}`
+### Trade-offs Considered
 
-Retrieves complete booking information.
+1. **Local vs Cloud LLM**
+   - Chose local for privacy and cost, accepting hardware requirements
+   - Cloud would offer easier scaling but higher costs
 
-**Response:**
-```json
-{
-  "booking_reference": "ABC1234",
-  "booking_id": 1,
-  "restaurant": "TheHungryUnicorn",
-  "visit_date": "2025-08-06",
-  "visit_time": "12:30:00",
-  "party_size": 4,
-  "status": "confirmed",
-  "special_requests": "Window table please",
-  "customer": {
-    "id": 1,
-    "first_name": "John",
-    "surname": "Smith",
-    "email": "john@example.com",
-    "mobile": "1234567890"
-  },
-  "created_at": "2025-08-06T10:30:00.123456",
-  "updated_at": "2025-08-06T10:30:00.123456"
-}
-```
+2. **WebSocket vs REST**
+   - WebSocket for real-time feel and persistent connections
+   - REST API also available for simpler integrations
 
-### 4. Update Booking
-**PATCH** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/{booking_reference}`
+3. **In-Memory vs Database State**
+   - In-memory for simplicity and speed in demo
+   - Production would use Redis or database for persistence
 
-Modifies an existing booking. Only provide fields you want to change.
+### Monitoring & Observability
 
-**Optional Parameters:**
-- `VisitDate`: New date (YYYY-MM-DD)
-- `VisitTime`: New time (HH:MM:SS)
-- `PartySize`: New party size
-- `SpecialRequests`: Updated special requests
-- `IsLeaveTimeConfirmed`: Time confirmation status
+1. **Metrics**
+   - Response time percentiles
+   - Token usage and costs
+   - API success/failure rates
+   - Session duration and counts
 
-**Response:**
-```json
-{
-  "booking_reference": "ABC1234",
-  "booking_id": 1,
-  "restaurant": "TheHungryUnicorn",
-  "updates": {
-    "party_size": 6,
-    "special_requests": "Updated request"
-  },
-  "status": "updated",
-  "updated_at": "2025-08-06T11:30:00.123456",
-  "message": "Booking ABC1234 has been successfully updated"
-}
-```
+2. **Logging**
+   - Structured logging with correlation IDs
+   - Conversation transcripts for quality review
+   - Error tracking with stack traces
 
-### 5. Cancel Booking
-**POST** `/api/ConsumerApi/v1/Restaurant/{restaurant_name}/Booking/{booking_reference}/Cancel`
+3. **Alerting**
+   - High error rate alerts
+   - Model response time degradation
+   - Memory/CPU usage thresholds
 
-Cancels an existing booking with a reason.
+## Limitations & Improvements
 
-**Parameters:**
-- `micrositeName`: Restaurant microsite name (same as restaurant_name)
-- `bookingReference`: Booking reference (same as in URL)
-- `cancellationReasonId`: Reason ID (1-5, see cancellation reasons below)
+### Current Limitations
+1. In-memory state lost on restart
+2. Single restaurant support only
+3. No user authentication
+4. Limited to English language
+5. No booking confirmation emails
 
-**Response:**
-```json
-{
-  "booking_reference": "ABC1234",
-  "booking_id": 1,
-  "restaurant": "TheHungryUnicorn",
-  "cancellation_reason_id": 1,
-  "cancellation_reason": "Customer Request",
-  "status": "cancelled",
-  "cancelled_at": "2025-08-06T12:30:00.123456",
-  "message": "Booking ABC1234 has been successfully cancelled"
-}
-```
-
-## Cancellation Reasons
-
-| ID | Reason | Description |
-|----|--------|-------------|
-| 1 | Customer Request | Customer requested cancellation |
-| 2 | Restaurant Closure | Restaurant temporarily closed |
-| 3 | Weather | Cancelled due to weather conditions |
-| 4 | Emergency | Emergency cancellation |
-| 5 | No Show | Customer did not show up |
-
-## Error Responses
-
-All endpoints return appropriate HTTP status codes:
-
-- **200 OK**: Successful operation
-- **400 Bad Request**: Invalid parameters or business rule violation
-- **404 Not Found**: Restaurant or booking not found
-- **422 Unprocessable Entity**: Validation errors
-
-Error response format:
-```json
-{
-  "detail": "Error description"
-}
-```
+### Potential Improvements
+1. **Multi-restaurant Support**: Extend to handle multiple venues
+2. **Persistent Storage**: Add database for state persistence
+3. **Email Integration**: Send booking confirmations
+4. **Multi-language**: Add translation layer
+5. **Voice Interface**: Integrate speech-to-text/text-to-speech
+6. **Analytics Dashboard**: Track booking patterns and user behavior
+7. **A/B Testing**: Experiment with different conversation flows
+8. **Feedback Loop**: Collect user satisfaction ratings
 
 ## API Documentation
 
-Once the server is running, you can access:
-- Interactive API docs: http://localhost:8547/docs
-- Alternative docs: http://localhost:8547/redoc
+### REST Endpoints
 
-## Example Requests
+#### POST /api/chat
+Process a chat message
+```json
+Request:
+{
+  "message": "I'd like to book a table for 4",
+  "session_id": "optional-session-id"
+}
 
-### 1. Check Availability
-```bash
-curl -X POST "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/AvailabilitySearch" \
-     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "VisitDate=2025-08-06&PartySize=2&ChannelCode=ONLINE"
+Response:
+{
+  "response": "I'd be happy to help...",
+  "session_id": "generated-or-provided-id"
+}
 ```
 
-### 2. Make a Booking
-```bash
-curl -X POST "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/BookingWithStripeToken" \
-     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "VisitDate=2025-08-06&VisitTime=12:30:00&PartySize=4&ChannelCode=ONLINE&SpecialRequests=Window table please&Customer[FirstName]=John&Customer[Surname]=Smith&Customer[Email]=john@example.com&Customer[Mobile]=1234567890"
+#### WebSocket /ws/{session_id}
+Real-time chat connection
+```javascript
+// Send message
+ws.send(JSON.stringify({
+  message: "Show availability for tomorrow"
+}))
+
+// Receive response
+{
+  type: "response",
+  content: "Here are the available times..."
+}
 ```
 
-### 3. Get Booking Details
+## Testing
+
+### Unit Tests
 ```bash
-curl -X GET "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/ABC1234" \
-     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8"
+pytest tests/unit -v
 ```
 
-### 4. Update Booking
+### Integration Tests
 ```bash
-curl -X PATCH "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/ABC1234" \
-     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "PartySize=6&SpecialRequests=Updated request"
+pytest tests/integration -v
 ```
 
-### 5. Cancel Booking
-```bash
-curl -X POST "http://localhost:8547/api/ConsumerApi/v1/Restaurant/TheHungryUnicorn/Booking/ABC1234/Cancel" \
-     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFwcGVsbGErYXBpQHJlc2RpYXJ5LmNvbSIsIm5iZiI6MTc1NDQzMDgwNSwiZXhwIjoxNzU0NTE3MjA1LCJpYXQiOjE3NTQ0MzA4MDUsImlzcyI6IlNlbGYiLCJhdWQiOiJodHRwczovL2FwaS5yZXNkaWFyeS5jb20ifQ.g3yLsufdk8Fn2094SB3J3XW-KdBc0DY9a2Jiu_56ud8" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "micrositeName=TheHungryUnicorn&bookingReference=ABC1234&cancellationReasonId=1"
+
+## Demo Scenarios
+
+### Scenario 1: Complete Booking Flow
+```
+User: "Hi, I'd like to make a reservation"
+Agent: "I'd be happy to help you make a reservation..."
+User: "Show me what's available this Saturday"
+Agent: "Here are the available times for Saturday..."
+User: "Book 7pm for 4 people"
+Agent: "Great! I've successfully made your booking..."
 ```
 
-## Database Operations
+### Scenario 2: Modification Flow
+```
+User: "I have booking ABC1234"
+Agent: "Let me check your booking details..."
+User: "Change it to 8pm instead"
+Agent: "Your booking has been successfully updated..."
+```
 
-The API now includes full CRUD operations with SQLite:
+## License
 
-- **Create**: New bookings are stored with unique references
-- **Read**: Availability checks real booking data and time slots
-- **Update**: Booking modifications are tracked with timestamps
-- **Delete**: Cancellations are soft-deleted with reason tracking
+MIT License - See LICENSE file for details
 
-### Sample Data Included
 
-- Restaurant: "TheHungryUnicorn" with availability slots
-- Time slots: 12:00-14:00 and 19:00-21:00 (30-minute intervals)
-- 30 days of future availability
-- 5 predefined cancellation reasons
+## Contact
 
-## Mock Data & Behaviour
+For questions or support, please open an issue on GitHub.
 
-- **Sample Restaurant**: "TheHungryUnicorn" is pre-loaded with availability data
-- **Time Slots**: Available lunch (12:00-13:30) and dinner (19:00-20:30) slots
-- **Availability**: Some slots randomly marked as unavailable to simulate real conditions
-- **Booking References**: Auto-generated 7-character alphanumeric codes
-- **Fixed Authentication**: Uses a single mock bearer token for all requests
-- **Persistent Data**: All bookings saved to SQLite database
-- **Realistic Responses**: All endpoints return realistic restaurant booking data
+---
 
-## Technical Details
-
-- **Database**: SQLite with persistent storage
-- **Port**: Server runs on localhost:8547 by default
-- **Auto-reload**: Development server watches for code changes
-- **CORS**: Enabled for cross-origin requests
-- **Validation**: Request validation with helpful error messages
+Built with passion for the Forward Deployed Engineer position at Appella AI
