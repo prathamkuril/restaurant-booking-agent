@@ -178,42 +178,6 @@ Open browser to http://localhost:8000
    - In-memory for simplicity and speed in demo
    - Production would use Redis or database for persistence
 
-## Production Considerations
-
-### Scaling Strategy
-
-1. **Horizontal Scaling**
-   - Deploy multiple agent instances behind load balancer
-   - Use Redis for shared session state
-   - Implement WebSocket sticky sessions
-
-2. **Model Optimization**
-   - Use quantized models (GGUF format) for memory efficiency
-   - Implement response caching for common queries
-   - Consider smaller models for intent classification
-
-3. **Infrastructure**
-   - Containerize with Docker for consistent deployment
-   - Use Kubernetes for orchestration and auto-scaling
-   - Implement health checks and circuit breakers
-
-### Security Implementation
-
-1. **Authentication**
-   - Add user authentication (OAuth2/JWT)
-   - Implement rate limiting per user
-   - Session timeout and rotation
-
-2. **Input Validation**
-   - Sanitize all user inputs
-   - Implement prompt injection detection
-   - Validate booking references format
-
-3. **Data Protection**
-   - Encrypt sensitive data at rest
-   - Use TLS for all communications
-   - Implement audit logging
-
 ### Monitoring & Observability
 
 1. **Metrics**
@@ -298,14 +262,6 @@ pytest tests/unit -v
 pytest tests/integration -v
 ```
 
-### Manual Testing Checklist
-- [x] Check availability for various dates
-- [x] Create booking with all details
-- [x] Retrieve booking by reference
-- [x] Modify booking time/date/size
-- [x] Cancel existing booking
-- [x] Handle invalid inputs gracefully
-- [x] Maintain conversation context
 
 ## Demo Scenarios
 
@@ -331,12 +287,6 @@ Agent: "Your booking has been successfully updated..."
 
 MIT License - See LICENSE file for details
 
-## Acknowledgments
-
-- Anthropic for Claude's assistance in development
-- Ollama team for local LLM infrastructure
-- LangChain/LangGraph for agent framework
-- FastAPI community for excellent documentation
 
 ## Contact
 
