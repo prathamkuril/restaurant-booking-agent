@@ -61,7 +61,7 @@ The agent features a modern web interface with real-time WebSocket communication
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/restaurant-booking-agent.git
+git clone https://github.com/prathamkuril/restaurant-booking-agent.git
 cd restaurant-booking-agent
 ```
 
@@ -250,17 +250,6 @@ ws.send(JSON.stringify({
 }
 ```
 
-## Testing
-
-### Unit Tests
-```bash
-pytest tests/unit -v
-```
-
-### Integration Tests
-```bash
-pytest tests/integration -v
-```
 
 
 ## Demo Scenarios
