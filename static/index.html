@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheHungryUnicorn - Restaurant Booking Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦄 TheHungryUnicorn</h1>
+            <p>AI-Powered Restaurant Booking Assistant</p>
+        </header>
+        
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="message system">
+                    <div class="message-content">
+                        Welcome to TheHungryUnicorn! I'm your booking assistant. I can help you:
+                        <ul>
+                            <li>Check availability for specific dates</li>
+                            <li>Make new reservations</li>
+                            <li>View your booking details</li>
+                            <li>Modify existing bookings</li>
+                            <li>Cancel reservations</li>
+                        </ul>
+                        How can I assist you today?
+                    </div>
+                </div>
+            </div>
+            
+            <div id="typing-indicator" class="typing-indicator" style="display: none;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    id="message-input" 
+                    placeholder="Type your message... (e.g., 'I'd like to book a table for 4 next Friday at 7pm')"
+                    autofocus
+                >
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <h3>Quick Actions:</h3>
+            <button class="quick-action" data-message="Show me availability for this weekend">
+                📅 Check Weekend Availability
+            </button>
+            <button class="quick-action" data-message="I'd like to make a reservation">
+                ➕ New Booking
+            </button>
+            <button class="quick-action" data-message="Check my booking">
+                🔍 Check Booking
+            </button>
+            <button class="quick-action" data-message="I need to change my reservation">
+                ✏️ Modify Booking
+            </button>
+        </div>
+        
+        <footer>
+            <p>Restaurant Hours: Lunch 12:00-14:00 | Dinner 19:00-21:00</p>
+            <p>Powered by Llama3 & LangGraph</p>
+        </footer>
+    </div>
+    
+    <script src="/static/script.js"></script>
+</body>
+</html>
