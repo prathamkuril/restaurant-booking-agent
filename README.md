@@ -13,6 +13,9 @@ This project implements a sophisticated restaurant booking assistant that handle
 
 The agent features a modern web interface with real-time WebSocket communication and maintains conversation context across multiple turns.
 
+## Video Demonstration
+Link : https://drive.google.com/file/d/1y8vvEUo9rMoz-4WOw7lGBx4Ylwa90yTK/view?usp=drive_link
+
 ## Architecture
 
 ### Technology Stack
